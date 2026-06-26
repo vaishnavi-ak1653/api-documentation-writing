@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel API Reference</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ground: #F8FAFC;
+  --surface: #FFFFFF;
+  --ink: #1A202C;
+  --ink-2: #4A5568;
+  --accent: #2563EB;
+  --accent-light: #EBF2FF;
+  --border: #E2E8F0;
+  --sidebar-bg: #0F172A;
+  --sidebar-fg: #CBD5E1;
+  --sidebar-2: #64748B;
+  --sidebar-active-bg: rgba(37,99,235,0.15);
+  --sidebar-active-fg: #93C5FD;
+  --code-bg: #1E2D3D;
+  --code-fg: #D4E2F7;
+  --get: #16A34A;
+  --get-bg: #F0FDF4;
+  --get-border: #BBF7D0;
+  --post: #2563EB;
+  --post-bg: #EFF6FF;
+  --post-border: #BFDBFE;
+  --delete: #DC2626;
+  --delete-bg: #FFF7F7;
+  --delete-border: #FECACA;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', Menlo, 'Cascadia Code', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--ground);
+  color: var(--ink);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar ─── */
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sidebar-product {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #38BDF8;
+  margin-bottom: 0.2rem;
+}
+
+.sidebar-title {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.sidebar-version {
+  font-size: 0.68rem;
+  color: var(--sidebar-2);
+  margin-top: 0.2rem;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--sidebar-2);
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: color 0.15s;
+}
+
+.back-link:hover { color: var(--sidebar-fg); }
+.back-link::before { content: '←'; }
+
+.nav-section {
+  padding: 1rem 0 0.5rem;
+}
+
+.nav-section-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(100,116,139,0.55);
+  padding: 0 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.nav-section ul { list-style: none; }
+
+.nav-section ul li a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--sidebar-fg);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  padding: 0.35rem 1.25rem;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+}
+
+.nav-section ul li a:hover {
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+}
+
+.nav-section ul li a.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-fg);
+}
+
+.method-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-get { background: #4ADE80; }
+.dot-post { background: #60A5FA; }
+.dot-delete { background: #F87171; }
+
+/* ─── Content ─── */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 860px;
+  padding: 3rem 3.5rem 6rem;
+}
+
+/* ─── Page header ─── */
+
+.page-header {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breadcrumb a { color: var(--accent); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+.sample-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #FEF9C3;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.28rem 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.sample-badge::before { content: '✦'; font-size: 0.6rem; }
+
+.page-header h1 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: normal;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+  line-height: 1.25;
+}
+
+.page-header p {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  max-width: 60ch;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.base-url {
+  display: inline-flex;
+  align-items: center;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  gap: 0.75rem;
+}
+
+.base-url-label {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748B;
+}
+
+/* ─── Section headings ─── */
+
+.doc-section {
+  margin-bottom: 1rem;
+}
+
+.doc-section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: normal;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+  text-wrap: balance;
+}
+
+.doc-section > p {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  max-width: 62ch;
+  margin-bottom: 1.25rem;
+  line-height: 1.75;
+}
+
+/* ─── Endpoint block ─── */
+
+.endpoint {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s;
+}
+
+.endpoint-header:hover { background: #FAFBFD; }
+.endpoint.open .endpoint-header { border-bottom-color: var(--border); }
+
+.method-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.method-get { background: var(--get-bg); color: var(--get); border: 1px solid var(--get-border); }
+.method-post { background: var(--post-bg); color: var(--post); border: 1px solid var(--post-border); }
+.method-delete { background: var(--delete-bg); color: var(--delete); border: 1px solid var(--delete-border); }
+
+.endpoint-path {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--ink);
+  flex: 1;
+}
+
+.endpoint-path .path-param { color: var(--accent); }
+
+.endpoint-summary {
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+.chevron {
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.endpoint.open .chevron { transform: rotate(180deg); }
+
+.endpoint-body {
+  display: none;
+  padding: 1.25rem;
+}
+
+.endpoint.open .endpoint-body { display: block; }
+
+.endpoint-desc {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  max-width: 58ch;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+}
+
+/* ─── Tables ─── */
+
+.param-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.param-label:first-child { margin-top: 0; }
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.param-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  background: #F8FAFC;
+}
+
+.param-table td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.param-table tr:last-child td { border-bottom: none; }
+
+.param-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.param-table td:nth-child(2) {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: #7C3AED;
+}
+
+.badge-required {
+  background: #FEF2F2;
+  color: #DC2626;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+.badge-optional {
+  background: var(--ground);
+  color: var(--ink-2);
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+/* ─── Code blocks ─── */
+
+.code-block {
+  background: var(--code-bg);
+  border-radius: 8px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.code-lang {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.code-label {
+  font-size: 0.68rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.code-block pre {
+  padding: 1rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.83rem;
+  color: var(--code-fg);
+  line-height: 1.65;
+  overflow-x: auto;
+}
+
+.code-block code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Syntax */
+.c-prompt { color: #475569; user-select: none; }
+.c-comment { color: #64748B; font-style: italic; }
+.c-key { color: #93C5FD; }
+.c-string { color: #86EFAC; }
+.c-number { color: #FCA5A5; }
+.c-bool { color: #FCD34D; }
+.c-url { color: #7DD3FC; }
+.c-status-ok { color: #4ADE80; font-weight: 600; }
+.c-status-err { color: #F87171; font-weight: 600; }
+
+/* Inline code */
+.doc-section p code,
+.endpoint-desc code,
+.endpoint-body p code {
+  font-family: var(--font-mono);
+  font-size: 0.83em;
+  background: var(--accent-light);
+  color: #1D4ED8;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+}
+
+/* ─── Two-column request/response ─── */
+
+.req-res {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+/* ─── Status table ─── */
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.status-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  background: #F8FAFC;
+}
+
+.status-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-2);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.status-table tr:last-child td { border-bottom: none; }
+
+.status-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  white-space: nowrap;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ─── Error section ─── */
+
+.error-shape {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* ─── General tables (auth scopes, rate limits) ─── */
+
+.table-wrapper { overflow-x: auto; margin-bottom: 1.25rem; }
+
+.general-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.general-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  padding: 0.55rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  background: #F8FAFC;
+}
+
+.general-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.general-table tr:last-child td { border-bottom: none; }
+
+.general-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--ink);
+}
+
+/* ─── Callout ─── */
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-light);
+  border-radius: 0 6px 6px 0;
+  padding: 0.875rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.callout p {
+  font-size: 0.875rem;
+  color: #1E3A8A;
+  line-height: 1.6;
+}
+
+.callout p code {
+  background: rgba(37,99,235,0.1) !important;
+  color: #1D4ED8 !important;
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 900px) {
+  body { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .nav-section { display: none; }
+  .content { padding: 2rem 1.5rem 4rem; }
+  .req-res { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .chevron { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Sidebar ─── -->
+<nav class="sidebar" aria-label="API Reference navigation">
+  <div class="sidebar-header">
+    <div class="sidebar-product">Sentinel</div>
+    <div class="sidebar-title">API Reference</div>
+    <div class="sidebar-version">v1 · REST</div>
+  </div>
+
+  <a href="https://vaishnavi-ak1653.github.io" class="back-link">Portfolio</a>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Overview</div>
+    <ul>
+      <li><a href="#authentication">Authentication</a></li>
+      <li><a href="#versioning">Versioning</a></li>
+      <li><a href="#rate-limits">Rate limits</a></li>
+      <li><a href="#errors">Errors</a></li>
+    </ul>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Scans</div>
+    <ul>
+      <li><a href="#scan-start"><span class="method-dot dot-post"></span> Start a scan</a></li>
+      <li><a href="#scan-get"><span class="method-dot dot-get"></span> Get a scan</a></li>
+      <li><a href="#scan-list"><span class="method-dot dot-get"></span> List scans</a></li>
+      <li><a href="#scan-cancel"><span class="method-dot dot-post"></span> Cancel a scan</a></li>
+    </ul>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Findings</div>
+    <ul>
+      <li><a href="#findings-list"><span class="method-dot dot-get"></span> List findings</a></li>
+      <li><a href="#findings-get"><span class="method-dot dot-get"></span> Get a finding</a></li>
+    </ul>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Suppressions</div>
+    <ul>
+      <li><a href="#suppress-create"><span class="method-dot dot-post"></span> Create suppression</a></li>
+      <li><a href="#suppress-delete"><span class="method-dot dot-delete"></span> Delete suppression</a></li>
+    </ul>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Examples</div>
+    <ul>
+      <li><a href="#example-poll">Poll for completion</a></li>
+      <li><a href="#example-ci">CI/CD integration</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ─── Content ─── -->
+<main class="content">
+
+  <div class="page-header">
+    <div class="sample-badge">Writing sample — fictional product</div>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="https://vaishnavi-ak1653.github.io">Portfolio</a>
+      <span aria-hidden="true">›</span>
+      <span>API Reference</span>
+    </nav>
+    <h1>Sentinel API Reference</h1>
+    <p>The Sentinel REST API lets you start dependency scans, retrieve findings, and manage suppressions programmatically. Use it to integrate Sentinel into CI/CD pipelines, build custom dashboards, or automate remediation workflows.</p>
+    <div class="base-url">
+      <span class="base-url-label">Base URL</span>
+      https://api.sentinel-cli.dev/v1
+    </div>
+  </div>
+
+  <!-- Authentication -->
+  <section class="doc-section" id="authentication">
+    <h2>Authentication</h2>
+    <p>All requests require an API key passed in the <code>Authorization</code> header. Generate one in <strong>Settings → API keys</strong>. Keys are scoped to a workspace and expire after 90 days by default.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span class="code-lang">http</span></div>
+      <pre><code>Authorization: Bearer &lt;your-api-key&gt;</code></pre>
+    </div>
+
+    <div class="param-label">Scopes</div>
+    <div class="table-wrapper">
+      <table class="general-table">
+        <thead><tr><th>Scope</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>scans:read</td><td>Read scan results and findings</td></tr>
+          <tr><td>scans:write</td><td>Start and cancel scans</td></tr>
+          <tr><td>suppressions:write</td><td>Create and delete suppressions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Versioning -->
+  <section class="doc-section" id="versioning">
+    <h2>Versioning</h2>
+    <p>The API version is included in the URL path (<code>/v1</code>). Breaking changes are introduced in new versions with at least 90 days notice. Non-breaking additions — new fields, new endpoints — may be added at any time.</p>
+  </section>
+
+  <!-- Rate limits -->
+  <section class="doc-section" id="rate-limits">
+    <h2>Rate limits</h2>
+    <div class="table-wrapper">
+      <table class="general-table">
+        <thead><tr><th>Plan</th><th>Requests per minute</th></tr></thead>
+        <tbody>
+          <tr><td>Free</td><td>30</td></tr>
+          <tr><td>Pro</td><td>300</td></tr>
+          <tr><td>Enterprise</td><td>Custom</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Responses include <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code> (Unix timestamp) headers. When the limit is exceeded the API returns <code>429 Too Many Requests</code>. Wait until <code>X-RateLimit-Reset</code> before retrying.</p>
+  </section>
+
+  <!-- ─── SCANS ─── -->
+  <section class="doc-section">
+    <h2 id="scans">Scans</h2>
+
+    <!-- Start a scan -->
+    <div class="endpoint open" id="scan-start">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="true">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-path">/scans</span>
+        <span class="endpoint-summary">Start a scan</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Starts a new dependency scan for a project. Sentinel detects the manifest type automatically, or you can specify it explicitly. Returns immediately with a <code>queued</code> scan — poll <code>GET /scans/{id}</code> for status.</p>
+
+        <div class="param-label">Request body</div>
+        <table class="param-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>project_id <span class="badge-required">required</span></td>
+              <td>string</td>
+              <td>The ID of the project to scan</td>
+            </tr>
+            <tr>
+              <td>ref <span class="badge-optional">optional</span></td>
+              <td>string</td>
+              <td>Git ref to scan (branch, tag, or commit SHA). Defaults to the project's default branch</td>
+            </tr>
+            <tr>
+              <td>manifest <span class="badge-optional">optional</span></td>
+              <td>string</td>
+              <td>Manifest type: <code>npm</code>, <code>pip</code>, <code>go</code>, <code>nuget</code>. Auto-detected if omitted</td>
+            </tr>
+            <tr>
+              <td>profile <span class="badge-optional">optional</span></td>
+              <td>string</td>
+              <td>Scan profile ID. Applies custom severity thresholds and exclusions</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="req-res">
+          <div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">bash</span>
+                <span class="code-label">Request</span>
+              </div>
+              <pre><code>curl -X POST \
+  <span class="c-url">https://api.sentinel-cli.dev/v1/scans</span> \
+  -H <span class="c-string">"Authorization: Bearer $KEY"</span> \
+  -H <span class="c-string">"Content-Type: application/json"</span> \
+  -d <span class="c-string">'{
+    "project_id": "proj_4kR9mNx2",
+    "ref": "main",
+    "manifest": "npm"
+  }'</span></code></pre>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span class="code-lang">json</span>
+                <span class="code-label"><span class="c-status-ok">202</span> Accepted</span>
+              </div>
+              <pre><code>{
+  <span class="c-key">"id"</span>: <span class="c-string">"scan_7vQpLw3X"</span>,
+  <span class="c-key">"status"</span>: <span class="c-string">"queued"</span>,
+  <span class="c-key">"project_id"</span>: <span class="c-string">"proj_4kR9mNx2"</span>,
+  <span class="c-key">"ref"</span>: <span class="c-string">"main"</span>,
+  <span class="c-key">"manifest"</span>: <span class="c-string">"npm"</span>,
+  <span class="c-key">"created_at"</span>: <span class="c-string">"2025-06-20T09:14:32Z"</span>,
+  <span class="c-key">"links"</span>: {
+    <span class="c-key">"self"</span>: <span class="c-string">"/v1/scans/scan_7vQpLw3X"</span>,
+    <span class="c-key">"findings"</span>: <span class="c-string">"/v1/scans/scan_7vQpLw3X/findings"</span>
+  }
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Get a scan -->
+    <div class="endpoint" id="scan-get">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/scans/<span class="path-param">{scan_id}</span></span>
+        <span class="endpoint-summary">Get a scan</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns the current status and summary of a scan.</p>
+
+        <div class="param-label">Scan status values</div>
+        <table class="param-table">
+          <thead><tr><th>Value</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>queued</td><td>Scan is waiting to start</td></tr>
+            <tr><td>running</td><td>Scan is in progress</td></tr>
+            <tr><td>completed</td><td>Scan finished successfully</td></tr>
+            <tr><td>failed</td><td>Scan encountered an error</td></tr>
+            <tr><td>cancelled</td><td>Scan was cancelled by the user</td></tr>
+          </tbody>
+        </table>
+
+        <div class="req-res">
+          <div>
+            <div class="code-block">
+              <div class="code-block-header"><span class="code-lang">bash</span><span class="code-label">Request</span></div>
+              <pre><code>curl \
+  <span class="c-url">https://api.sentinel-cli.dev/v1/scans/scan_7vQpLw3X</span> \
+  -H <span class="c-string">"Authorization: Bearer $KEY"</span></code></pre>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-block-header"><span class="code-lang">json</span><span class="code-label"><span class="c-status-ok">200</span> OK</span></div>
+              <pre><code>{
+  <span class="c-key">"id"</span>: <span class="c-string">"scan_7vQpLw3X"</span>,
+  <span class="c-key">"status"</span>: <span class="c-string">"completed"</span>,
+  <span class="c-key">"packages_scanned"</span>: <span class="c-number">134</span>,
+  <span class="c-key">"summary"</span>: {
+    <span class="c-key">"critical"</span>: <span class="c-number">3</span>,
+    <span class="c-key">"high"</span>: <span class="c-number">8</span>,
+    <span class="c-key">"medium"</span>: <span class="c-number">12</span>,
+    <span class="c-key">"low"</span>: <span class="c-number">47</span>
+  },
+  <span class="c-key">"created_at"</span>: <span class="c-string">"2025-06-20T09:14:32Z"</span>,
+  <span class="c-key">"completed_at"</span>: <span class="c-string">"2025-06-20T09:15:18Z"</span>
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List scans -->
+    <div class="endpoint" id="scan-list">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/scans</span>
+        <span class="endpoint-summary">List scans</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns a paginated list of scans for the authenticated workspace.</p>
+
+        <div class="param-label">Query parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>project_id</td><td>string</td><td>Filter by project</td></tr>
+            <tr><td>status</td><td>string</td><td>Filter: <code>queued</code>, <code>running</code>, <code>completed</code>, <code>failed</code></td></tr>
+            <tr><td>limit</td><td>integer</td><td>Results per page. Default: <code>20</code>, max: <code>100</code></td></tr>
+            <tr><td>cursor</td><td>string</td><td>Pagination cursor from a previous response</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-lang">json</span><span class="code-label"><span class="c-status-ok">200</span> OK</span></div>
+          <pre><code>{
+  <span class="c-key">"data"</span>: [ { <span class="c-comment">/* scan objects */</span> } ],
+  <span class="c-key">"pagination"</span>: {
+    <span class="c-key">"next_cursor"</span>: <span class="c-string">"cur_Yw9mRn4K"</span>,
+    <span class="c-key">"has_more"</span>: <span class="c-bool">true</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel a scan -->
+    <div class="endpoint" id="scan-cancel">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-path">/scans/<span class="path-param">{scan_id}</span>/cancel</span>
+        <span class="endpoint-summary">Cancel a scan</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Cancels a scan that is <code>queued</code> or <code>running</code>. Has no effect on completed or already-cancelled scans. Returns the updated scan object.</p>
+        <div class="callout"><p>Use this endpoint to abort long-running scans in CI environments when a pipeline is cancelled upstream.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FINDINGS ─── -->
+  <section class="doc-section">
+    <h2 id="findings">Findings</h2>
+
+    <div class="endpoint" id="findings-list">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/scans/<span class="path-param">{scan_id}</span>/findings</span>
+        <span class="endpoint-summary">List findings for a scan</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns all findings from a completed scan. Only available when <code>status</code> is <code>completed</code>.</p>
+
+        <div class="param-label">Query parameters</div>
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>severity</td><td>string</td><td>Filter: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td></tr>
+            <tr><td>status</td><td>string</td><td>Filter: <code>open</code>, <code>suppressed</code>, <code>fixed</code></td></tr>
+            <tr><td>limit</td><td>integer</td><td>Default: <code>50</code>, max: <code>200</code></td></tr>
+            <tr><td>cursor</td><td>string</td><td>Pagination cursor</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-lang">json</span><span class="code-label"><span class="c-status-ok">200</span> OK — finding object</span></div>
+          <pre><code>{
+  <span class="c-key">"id"</span>: <span class="c-string">"find_2mBvKq9Z"</span>,
+  <span class="c-key">"severity"</span>: <span class="c-string">"critical"</span>,
+  <span class="c-key">"status"</span>: <span class="c-string">"open"</span>,
+  <span class="c-key">"package"</span>: {
+    <span class="c-key">"name"</span>: <span class="c-string">"lodash"</span>,
+    <span class="c-key">"version"</span>: <span class="c-string">"4.17.15"</span>,
+    <span class="c-key">"ecosystem"</span>: <span class="c-string">"npm"</span>
+  },
+  <span class="c-key">"vulnerability"</span>: {
+    <span class="c-key">"id"</span>: <span class="c-string">"CVE-2021-23337"</span>,
+    <span class="c-key">"title"</span>: <span class="c-string">"Command injection via template"</span>,
+    <span class="c-key">"cvss_score"</span>: <span class="c-number">7.2</span>
+  },
+  <span class="c-key">"fix"</span>: {
+    <span class="c-key">"available"</span>: <span class="c-bool">true</span>,
+    <span class="c-key">"recommended_version"</span>: <span class="c-string">"4.17.21"</span>,
+    <span class="c-key">"is_breaking_change"</span>: <span class="c-bool">false</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint" id="findings-get">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/findings/<span class="path-param">{finding_id}</span></span>
+        <span class="endpoint-summary">Get a finding</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns a single finding by ID. Same schema as items in the list response, with full vulnerability detail including CVE references.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SUPPRESSIONS ─── -->
+  <section class="doc-section">
+    <h2 id="suppressions">Suppressions</h2>
+    <p>Mark a finding as intentionally ignored. Suppressed findings are excluded from scan summaries until the suppression is removed or expires.</p>
+
+    <div class="endpoint" id="suppress-create">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-path">/findings/<span class="path-param">{finding_id}</span>/suppress</span>
+        <span class="endpoint-summary">Create a suppression</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="param-label">Request body</div>
+        <table class="param-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>reason <span class="badge-required">required</span></td>
+              <td>string</td>
+              <td>One of: <code>false_positive</code>, <code>accepted_risk</code>, <code>not_applicable</code></td>
+            </tr>
+            <tr>
+              <td>note <span class="badge-optional">optional</span></td>
+              <td>string</td>
+              <td>Free-text explanation. Visible to teammates and in audit logs</td>
+            </tr>
+            <tr>
+              <td>expires_at <span class="badge-optional">optional</span></td>
+              <td>string</td>
+              <td>ISO 8601 datetime. The suppression lifts automatically after this time</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="req-res">
+          <div>
+            <div class="code-block">
+              <div class="code-block-header"><span class="code-lang">bash</span><span class="code-label">Request</span></div>
+              <pre><code>curl -X POST \
+  <span class="c-url">.../findings/find_2mBvKq9Z/suppress</span> \
+  -H <span class="c-string">"Authorization: Bearer $KEY"</span> \
+  -d <span class="c-string">'{
+    "reason": "not_applicable",
+    "note": "Template is never called with untrusted input.",
+    "expires_at": "2025-12-31T00:00:00Z"
+  }'</span></code></pre>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-block-header"><span class="code-lang">json</span><span class="code-label"><span class="c-status-ok">201</span> Created</span></div>
+              <pre><code>{
+  <span class="c-key">"id"</span>: <span class="c-string">"supp_9nRkWm1P"</span>,
+  <span class="c-key">"finding_id"</span>: <span class="c-string">"find_2mBvKq9Z"</span>,
+  <span class="c-key">"reason"</span>: <span class="c-string">"not_applicable"</span>,
+  <span class="c-key">"created_by"</span>: <span class="c-string">"user_5jXqAb2N"</span>,
+  <span class="c-key">"created_at"</span>: <span class="c-string">"2025-06-20T10:02:44Z"</span>,
+  <span class="c-key">"expires_at"</span>: <span class="c-string">"2025-12-31T00:00:00Z"</span>
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint" id="suppress-delete">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false">
+        <span class="method-badge method-delete">DELETE</span>
+        <span class="endpoint-path">/findings/<span class="path-param">{finding_id}</span>/suppress</span>
+        <span class="endpoint-summary">Delete a suppression</span>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Removes the suppression. The finding returns to <code>open</code> status and appears in future scan summaries. Returns <code>204 No Content</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ERRORS ─── -->
+  <section class="doc-section" id="errors">
+    <h2>Errors</h2>
+    <p>All errors follow a consistent shape. Include <code>request_id</code> when contacting support — it identifies the exact request in Sentinel's logs.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span class="code-lang">json</span><span class="code-label">Error object</span></div>
+      <pre><code>{
+  <span class="c-key">"error"</span>: {
+    <span class="c-key">"code"</span>: <span class="c-string">"resource_not_found"</span>,
+    <span class="c-key">"message"</span>: <span class="c-string">"No scan found with ID scan_7vQpLw3X."</span>,
+    <span class="c-key">"request_id"</span>: <span class="c-string">"req_3KmNpQ8v"</span>
+  }
+}</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="general-table">
+        <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>400</td><td>Request body is malformed or missing required fields</td></tr>
+          <tr><td>401</td><td>API key is missing, invalid, or expired</td></tr>
+          <tr><td>403</td><td>API key lacks the required scope for this action</td></tr>
+          <tr><td>404</td><td>Resource does not exist or is not accessible with this key</td></tr>
+          <tr><td>409</td><td>Action conflicts with current state (e.g. cancelling a completed scan)</td></tr>
+          <tr><td>422</td><td>Request is well-formed but contains invalid values</td></tr>
+          <tr><td>429</td><td>Rate limit exceeded — check <code>X-RateLimit-Reset</code></td></tr>
+          <tr><td>500</td><td>Unexpected server error. Retry with exponential backoff</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="general-table">
+        <thead><tr><th>Error code</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>invalid_api_key</td><td>The API key is malformed or has been revoked</td></tr>
+          <tr><td>insufficient_scope</td><td>The API key lacks permission for this action</td></tr>
+          <tr><td>resource_not_found</td><td>The specified resource does not exist</td></tr>
+          <tr><td>scan_not_complete</td><td>Attempted to retrieve findings for an incomplete scan</td></tr>
+          <tr><td>suppression_exists</td><td>A suppression already exists for this finding</td></tr>
+          <tr><td>rate_limit_exceeded</td><td>Too many requests — check <code>X-RateLimit-Reset</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── EXAMPLES ─── -->
+  <section class="doc-section">
+    <h2 id="examples">Examples</h2>
+
+    <div class="param-label" id="example-poll">Poll for scan completion (Python)</div>
+    <div class="code-block">
+      <div class="code-block-header"><span class="code-lang">python</span></div>
+      <pre><code><span class="c-comment"># Scans are asynchronous — start one, then poll until it completes.</span>
+import time, requests
+
+HEADERS = {<span class="c-string">"Authorization"</span>: <span class="c-string">f"Bearer {API_KEY}"</span>}
+
+resp = requests.post(<span class="c-string">f"{BASE_URL}/scans"</span>, headers=HEADERS, json={
+    <span class="c-string">"project_id"</span>: <span class="c-string">"proj_4kR9mNx2"</span>,
+    <span class="c-string">"ref"</span>: <span class="c-string">"main"</span>
+})
+scan_id = resp.json()[<span class="c-string">"id"</span>]
+
+while True:
+    scan = requests.get(<span class="c-string">f"{BASE_URL}/scans/{scan_id}"</span>, headers=HEADERS).json()
+    status = scan[<span class="c-string">"status"</span>]
+    if status in (<span class="c-string">"completed"</span>, <span class="c-string">"failed"</span>, <span class="c-string">"cancelled"</span>):
+        break
+    time.sleep(<span class="c-number">5</span>)
+
+if status == <span class="c-string">"completed"</span>:
+    s = scan[<span class="c-string">"summary"</span>]
+    print(<span class="c-string">f"{s['critical']} critical · {s['high']} high"</span>)</code></pre>
+    </div>
+
+    <div class="param-label" id="example-ci" style="margin-top: 2rem;">Fail a CI build on critical findings (bash)</div>
+    <div class="code-block">
+      <div class="code-block-header"><span class="code-lang">bash</span></div>
+      <pre><code><span class="c-comment">#!/bin/bash</span>
+set -e
+
+SCAN_ID=$(curl -s -X POST <span class="c-string">"$BASE_URL/scans"</span> \
+  -H <span class="c-string">"Authorization: Bearer $SENTINEL_API_KEY"</span> \
+  -H <span class="c-string">"Content-Type: application/json"</span> \
+  -d <span class="c-string">'{"project_id": "'"$PROJECT_ID"'", "ref": "'"$GIT_SHA"'"}'</span> \
+  | jq -r <span class="c-string">'.id'</span>)
+
+<span class="c-comment"># Poll until complete (add exponential backoff in production)</span>
+while true; do
+  STATUS=$(curl -s <span class="c-string">"$BASE_URL/scans/$SCAN_ID"</span> \
+    -H <span class="c-string">"Authorization: Bearer $SENTINEL_API_KEY"</span> \
+    | jq -r <span class="c-string">'.status'</span>)
+  [ <span class="c-string">"$STATUS"</span> = <span class="c-string">"completed"</span> ] &amp;&amp; break
+  sleep 5
+done
+
+CRITICAL=$(curl -s <span class="c-string">"$BASE_URL/scans/$SCAN_ID"</span> \
+  -H <span class="c-string">"Authorization: Bearer $SENTINEL_API_KEY"</span> \
+  | jq <span class="c-string">'.summary.critical'</span>)
+
+if [ <span class="c-string">"$CRITICAL"</span> -gt 0 ]; then
+  echo <span class="c-string">"Build failed: $CRITICAL critical vulnerabilities found."</span>
+  exit 1
+fi
+
+echo <span class="c-string">"Scan passed."</span></code></pre>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Accordion toggle
+document.querySelectorAll('.endpoint-header').forEach(header => {
+  const toggle = () => {
+    const endpoint = header.closest('.endpoint');
+    const isOpen = endpoint.classList.contains('open');
+    endpoint.classList.toggle('open', !isOpen);
+    header.setAttribute('aria-expanded', String(!isOpen));
+  };
+
+  header.addEventListener('click', toggle);
+  header.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+});
+
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const active = document.querySelector(`.sidebar a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
